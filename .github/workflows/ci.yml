@@ -7,14 +7,12 @@ on:
       - synchronize
   push:
     branches:
-      - main
-      - canary
+      - develop
   merge_group:
 
-env:
-  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
-  BETTER_AUTH_TELEMETRY_ENDPOINT: ${{ vars.BETTER_AUTH_TELEMETRY_ENDPOINT }}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.merge_group.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:
@@ -47,42 +45,24 @@ jobs:
         run: pnpm install
 
       - name: Build
-        env:
-          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-          TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
         run: pnpm build
 
       - name: Lint
-        env:
-          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-          TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
         run: pnpm lint
 
       - name: Lint Dependencies
-        env:
-          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-          TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
         run: pnpm lint:dependencies
 
       - name: Lint Packages
-        env:
-          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-          TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
         run: pnpm lint:packages
 
       - name: Lint Spell
-        env:
-          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-          TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
         run: pnpm lint:spell
 
       - name: Lint Format
         run: pnpm format:check
 
       - name: Lint Types
-        env:
-          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-          TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
         run: pnpm lint:types
 
   typecheck:

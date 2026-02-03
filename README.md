@@ -1,30 +1,115 @@
-<p align="center">
-  <picture>
-    <source srcset="./banner-dark.png" media="(prefers-color-scheme: dark)"/>
-    <source srcset="./banner.png" media="(prefers-color-scheme: light)"/>
-    <img src="./banner.png" alt="Better Auth Logo"/>
-  </picture>
-  <h2 align="center">
-    Better Auth
-  </h2>
+# About This Project
 
-  <p align="center">
-    The most comprehensive authentication framework for TypeScript
-    <br />
-    <a href="https://better-auth.com"><strong>Learn more »</strong></a>
-    <br />
-    <br />
-    <a href="https://discord.gg/better-auth">Discord</a>
-    ·
-    <a href="https://better-auth.com">Website</a>
-    ·
-    <a href="https://github.com/better-auth/better-auth/issues">Issues</a>
-  </p>
+This is a customized fork of [better-auth](https://github.com/better-auth/better-auth) with enhancements tailored to application-specific requirements.
 
-[![npm](https://img.shields.io/npm/dm/better-auth?style=flat&colorA=000000&colorB=000000)](https://npm.chart.dev/better-auth?primary=neutral&gray=neutral&theme=dark)
-[![npm version](https://img.shields.io/npm/v/better-auth.svg?style=flat&colorA=000000&colorB=000000)](https://www.npmjs.com/package/better-auth)
-[![GitHub stars](https://img.shields.io/github/stars/better-auth/better-auth?style=flat&colorA=000000&colorB=000000)](https://github.com/better-auth/better-auth/stargazers)
-</p>
+## Customizations
+
+1. [Resolved InternalAdapter deadlock issue](https://github.com/better-auth/better-auth/pull/7758)
+
+## Usage
+
+### Branch Structure
+
+- `main`: Tracks [better-auth/better-auth](https://github.com/better-auth/better-auth) upstream
+- `develop`: Development branch; based on `main`
+- `customize/*`: Contains customization changes
+
+### Syncing Changes from Upstream
+
+#### Updating `main` branch
+
+```sh
+git fetch upstream
+git checkout main
+git rebase upstream/main
+git push origin main
+```
+
+#### Updating `develop` branch
+
+```sh
+git fetch origin
+git checkout develop
+git checkout -b customize/merge-v1.1.2
+git rebase upstream/main
+```
+
+## Development Tips
+
+### Code formatting
+```sh
+# Format all code
+pnpm format
+
+# Check for linting issues
+pnpm lint
+
+# Fix auto-fixable issues
+pnpm lint:fix
+```
+
+### Testing
+```sh
+# Start test databases
+docker compose up -d
+
+# Run tests for the better-auth package
+pnpm -F "better-auth" test
+
+# Stop test databases
+docker compose down
+```
+
+
+## Repository Setup Instructions
+
+### 1. Clone better-auth
+
+```sh
+git clone -b main --single-branch --no-tags https://github.com/better-auth/better-auth.git better-auth-custom
+```
+
+### 2. Configure Remote Repositories
+
+```sh
+# Check current remotes
+git remote -v
+
+git remote rename origin upstream
+git remote add origin https://github.com/sakamoto-wk/better-auth-custom.git
+
+# Disable pushes to upstream
+git remote set-url --push upstream DISABLED
+
+# Verify the configuration
+git remote -v
+```
+
+### 3. Push `main` Branch to Origin
+
+```sh
+git branch -M main
+git push -u origin main
+```
+
+### 4. Create `develop` Branch
+
+```sh
+git checkout main
+git checkout -b develop
+git push -u origin develop
+```
+
+### 5. Create a Feature Branch
+
+```sh
+git checkout develop
+git checkout -b customize/project-setting
+```
+
+---
+
+# Upstream Project README Follows
 
 ## About the Project
 

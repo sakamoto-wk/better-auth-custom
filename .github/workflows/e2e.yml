@@ -1,14 +1,9 @@
 name: E2E
 on:
   push:
-    branches: [ main, canary ]
+    branches: [ develop ]
   merge_group:
   pull_request:
-
-env:
-  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
-  BETTER_AUTH_TELEMETRY_ENDPOINT: ${{ vars.BETTER_AUTH_TELEMETRY_ENDPOINT }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.merge_group.head_ref || github.ref }}
