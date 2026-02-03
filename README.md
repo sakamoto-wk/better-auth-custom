@@ -34,6 +34,33 @@ git checkout -b customize/merge-v1.1.2
 git rebase upstream/main
 ```
 
+## Development Tips
+
+### Code formatting
+```sh
+# Format all code
+pnpm format
+
+# Check for linting issues
+pnpm lint
+
+# Fix auto-fixable issues
+pnpm lint:fix
+```
+
+### Testing
+```sh
+# Start test databases
+docker compose up -d
+
+# Run tests for the better-auth package
+pnpm -F "better-auth" test
+
+# Stop test databases
+docker compose down
+```
+
+
 ## Repository Setup Instructions
 
 ### 1. Clone better-auth
