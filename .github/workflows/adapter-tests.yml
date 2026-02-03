@@ -7,8 +7,7 @@ on:
       - synchronize
   push:
     branches:
-      - main
-      - canary
+      - develop
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.merge_group.head_ref || github.ref }}
@@ -46,10 +45,6 @@ jobs:
         run: pnpm install
 
       - name: Build
-        env:
-          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-          TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
-          TURBO_CACHE: remote:rw
         run: pnpm build
 
       - name: Start Docker Containers
@@ -60,9 +55,6 @@ jobs:
 
       - name: Test Adapters
         working-directory: packages/better-auth
-        env:
-          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-          TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
         run: pnpm test:adapters
 
       - name: Stop Docker Containers

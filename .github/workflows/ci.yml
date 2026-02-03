@@ -7,15 +7,8 @@ on:
       - synchronize
   push:
     branches:
-      - main
-      - canary
+      - develop
   merge_group:
-
-env:
-  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
-  TURBO_CACHE: remote:rw
-  BETTER_AUTH_TELEMETRY_ENDPOINT: ${{ vars.BETTER_AUTH_TELEMETRY_ENDPOINT }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.merge_group.head_ref || github.ref }}
@@ -49,45 +42,21 @@ jobs:
         run: pnpm install
 
       - name: Build
-        env:
-          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-          TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
-          TURBO_CACHE: remote:rw
         run: pnpm build
 
       - name: Lint
-        env:
-          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-          TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
-          TURBO_CACHE: remote:rw
         run: pnpm lint
 
       - name: Lint Dependencies
-        env:
-          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-          TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
-          TURBO_CACHE: remote:rw
         run: pnpm lint:dependencies
 
       - name: Lint Packages
-        env:
-          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-          TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
-          TURBO_CACHE: remote:rw
         run: pnpm lint:packages
 
       - name: Lint Spell
-        env:
-          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-          TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
-          TURBO_CACHE: remote:rw
         run: pnpm lint:spell
 
       - name: Lint Types
-        env:
-          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-          TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
-          TURBO_CACHE: remote:rw
         run: pnpm lint:types
 
   typecheck:
@@ -163,10 +132,6 @@ jobs:
 
       - name: Build
         if: github.event_name != 'merge_group'
-        env:
-          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-          TURBO_TEAM: ${{ vars.TURBO_TEAM || github.repository_owner }}
-          TURBO_CACHE: remote:rw
         run: pnpm build
 
       - name: Start Docker Containers
