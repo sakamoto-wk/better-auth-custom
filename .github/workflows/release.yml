@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v1.2.3). Use exact tag name.'
+        required: true
+        default: ''
 
 permissions:
   contents: write
@@ -13,14 +19,42 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Set checkout ref
+        id: set_ref
+        shell: bash
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+          EVENT_REF: ${{ github.ref }}
+        run: |
+          if [ -n "$INPUT_TAG" ]; then
+            echo "ref=$INPUT_TAG" >> $GITHUB_OUTPUT
+          else
+            echo "ref=$EVENT_REF" >> $GITHUB_OUTPUT
+          fi
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 0
+          ref: ${{ steps.set_ref.outputs.ref }}
 
       - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: 22.x
 
+      - name: validate tag format
+        id: validate_tag
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          # Allow only: vMAJOR.MINOR.PATCH or vMAJOR.MINOR.PATCH-PRERELEASE
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid tag format: $TAG"
+            echo "::error ::Tag must match vMAJOR.MINOR.PATCH or vMAJOR.MINOR.PATCH-PRERELEASE"
+            exit 1
+          fi
+          VERSION="${TAG#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Validated tag: $TAG, version: $VERSION"
+      
       - run: npx changelogithub
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
@@ -35,6 +69,26 @@ jobs:
       - run: pnpm install
 
       - name: Build
+        run: pnpm build
+      
+      - name: Update better-auth configuration
+        working-directory: packages/better-auth
+        env:
+          VERSION: ${{ steps.validate_tag.outputs.version }}
+        run: node ${{ github.workspace }}/.github/workflows/scripts/release-update_config-better-auth.cjs
+
+      - name: Build better-auth
+        working-directory: packages/better-auth
+        run: pnpm build
+
+      - name: Update better-auth/core configuration
+        working-directory: packages/core
+        env:
+          VERSION: ${{ steps.validate_tag.outputs.version }}
+        run: node ${{ github.workspace }}/.github/workflows/scripts/release-update_config-better-auth-core.cjs
+
+      - name: Build better-auth/core
+        working-directory: packages/core
         run: pnpm build
 
       - name: Determine npm tag
@@ -64,8 +118,16 @@ jobs:
           echo "npm_tag=$NPM_TAG" >> $GITHUB_OUTPUT
           echo "Using npm tag: $NPM_TAG"
 
-      - name: Publish to npm
-        run: pnpm -r publish --access public --no-git-checks --tag ${{ steps.determine_npm_tag.outputs.npm_tag }}
+      - name: Publish better-auth to npm
+        working-directory: packages/better-auth
+        run: pnpm publish --access public --no-git-checks --tag ${{ steps.determine_npm_tag.outputs.npm_tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
+
+      - name: Publish @better-auth/core to npm
+        working-directory: packages/core
+        run: pnpm publish --access public --no-git-checks --tag ${{ steps.determine_npm_tag.outputs.npm_tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
