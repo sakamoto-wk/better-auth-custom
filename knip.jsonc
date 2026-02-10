@@ -96,5 +96,10 @@
 		],
 		"entry": ["**/*.test.ts", "**/*.spec.ts"]
 	},
-	"ignoreWorkspaces": ["demo/**", "docs/**", "e2e/**"]
+	"ignoreWorkspaces": [
+		"demo/**",
+		"docs/**",
+		"e2e/**",
+		".github/workflows/scripts/**"
+	]
 }
