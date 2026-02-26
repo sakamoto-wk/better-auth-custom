@@ -536,6 +536,15 @@ export type BetterAuthOptions = {
 					user: User,
 					request?: Request,
 				) => Promise<void>;
+				/**
+				 * A function that is called when a user's email is already verified.
+				 * @param user the user that verified their email
+				 * @param request the request object
+				 */
+				onEmailAlreadyVerified?: (
+					user: User,
+					request?: Request,
+				) => Promise<void>;
 		  }
 		| undefined;
 	/**

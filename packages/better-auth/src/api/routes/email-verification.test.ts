@@ -248,6 +248,53 @@ describe("Email Verification", async () => {
 		);
 	});
 
+	it("should call onEmailAlreadyVerified callback when email has been verified.", async () => {
+		const onEmailAlreadyVerifiedMock = vi.fn();
+		const { auth, client, testUser } = await getTestInstance({
+			emailAndPassword: {
+				enabled: true,
+				requireEmailVerification: true,
+			},
+			emailVerification: {
+				async sendVerificationEmail({ user, url, token: _token }) {
+					token = _token;
+					mockSendEmail(user.email, url);
+				},
+				onEmailAlreadyVerified: onEmailAlreadyVerifiedMock,
+			},
+		});
+
+		await auth.api.sendVerificationEmail({
+			body: {
+				email: testUser.email,
+			},
+		});
+
+		let res = await client.verifyEmail({
+			query: {
+				token,
+			},
+		});
+
+		// onEmailAlreadyVerified should not be called since the email is not verified.
+		expect(res.data?.status).toBe(true);
+		expect(onEmailAlreadyVerifiedMock).not.toHaveBeenCalled();
+
+		// Try verifying again with the same token
+		// onEmailAlreadyVerified should be called since the email is already verified.
+		res = await client.verifyEmail({
+			query: {
+				token,
+			},
+		});
+
+		expect(res.data?.status).toBe(true);
+		expect(onEmailAlreadyVerifiedMock).toHaveBeenCalledWith(
+			expect.objectContaining({ email: testUser.email, emailVerified: true }),
+			expect.any(Object),
+		);
+	});
+
 	it("should preserve encoded characters in callback URL", async () => {
 		const testEmail = "test+user@example.com";
 		const encodedEmail = encodeURIComponent(testEmail);
